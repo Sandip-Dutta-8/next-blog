@@ -1,10 +1,10 @@
-import Navbar from '@/components/navbar/Navbar'
 import './globals.css'
 import { Inter } from 'next/font/google'
-import Footer from '@/components/footer/Footer'
-import { ThemeContextProvider } from '@/context/ThemeContext'
-import ThemeProviders from '@/providers/ThemeProviders'
-import AuthProvider from '@/providers/AuthProvider'
+import { ThemeContextProvider } from '../context/ThemeContext'
+import ThemeProviders from '../providers/ThemeProviders'
+import AuthProvider from '../providers/AuthProvider'
+import Navbar from '../components/navbar/Navbar'
+import Footer from '../components/footer/Footer'
 
 const inter = Inter({ subsets: ['latin'] })
 
