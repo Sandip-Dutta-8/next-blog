@@ -1,10 +1,14 @@
 "use client";
+
 import { signIn, useSession } from "next-auth/react";
 import styles from "./loginPage.module.css";
 import { useRouter } from "next/navigation";
 
 const LoginPage = () => {
-  const { status } = useSession();
+  const { data, status } = useSession();
+
+  // console.log(process.env.GOOGLE_ID, process.env.GOOGLE_SECRET, process.env.DATABASE_URL);
+
 
   const router = useRouter();
 
