@@ -95,6 +95,30 @@ const WritePage = () => {
         // }
     };
 
+    const modules = {
+        toolbar: [
+            [{ header: [1, 2, false] }],
+            ["bold", "italic", "underline", "strike", "blockquote"],
+            [{ list: "ordered" }, { list: "bullet" }, { indent: "-1" }, { indent: "+1" }],
+            ["link", "image"],
+            ["clean"],
+        ],
+    };
+
+    const formats = [
+        "header",
+        "bold",
+        "italic",
+        "underline",
+        "strike",
+        "blockquote",
+        "list",
+        "bullet",
+        "indent",
+        "link",
+        "image",
+    ];
+
     return (
         <div className={styles.container}>
             <input
@@ -124,7 +148,7 @@ const WritePage = () => {
                             style={{ display: "none" }}
                         />
                         <button className={styles.addButton}>
-                            <label htmlFor="image" style={{cursor: "pointer"}}>
+                            <label htmlFor="image" style={{ cursor: "pointer" }}>
                                 <Image src="/image.png" alt="" width={16} height={16} />
                             </label>
                         </button>
@@ -142,6 +166,8 @@ const WritePage = () => {
                     value={value}
                     onChange={setValue}
                     placeholder="Tell your story..."
+                    modules={modules}
+                    formats={formats}
                 />
             </div>
             <button className={styles.publish} onClick={handleSubmit}>
