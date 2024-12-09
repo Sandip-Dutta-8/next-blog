@@ -5,37 +5,42 @@ import styles from "./comments.module.css";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
+import useSWR from "swr";
 
-// const fetcher = async (url) => {
-//     const res = await fetch(url);
+const fetcher = async (url) => {
+    const res = await fetch(url);
 
-//     const data = await res.json();
+    if (!res.ok) {
+        const error = new Error(res.statusText);
+        throw error;
+    }
 
-//     if (!res.ok) {
-//         const error = new Error(data.message);
-//         throw error;
-//     }
-
-//     return data;
-// };
+    return res.json();
+};
 
 const Comments = ({ postSlug }) => {
     const { status } = useSession();
 
-    // const { data, mutate, isLoading } = useSWR(
-    //     `http://localhost:3000/api/comments?postSlug=${postSlug}`,
-    //     fetcher
-    // );
+    const { data, error, mutate } = useSWR(
+        postSlug ? `/api/comments?postSlug=${postSlug}` : null,
+        fetcher
+    );
 
     const [desc, setDesc] = useState("");
 
-    // const handleSubmit = async () => {
-    //     await fetch("/api/comments", {
-    //         method: "POST",
-    //         body: JSON.stringify({ desc, postSlug }),
-    //     });
-    //     mutate();
-    // };
+    const handleSubmit = async () => {
+        if (!desc.trim()) return;
+
+        await fetch("/api/comments", {
+            method: "POST",
+            body: JSON.stringify({ desc, postSlug }),
+        });
+        mutate();
+    };
+
+    if (error) {
+        return <div>Error loading comments: {error.message}</div>;
+    }
 
     return (
         <div className={styles.container}>
@@ -47,7 +52,7 @@ const Comments = ({ postSlug }) => {
                         className={styles.input}
                         onChange={(e) => setDesc(e.target.value)}
                     />
-                    <button className={styles.button} onClick={() => {}}>
+                    <button className={styles.button} onClick={handleSubmit}>
                         Send
                     </button>
                 </div>
@@ -55,22 +60,30 @@ const Comments = ({ postSlug }) => {
                 <Link href="/login">Login to write a comment</Link>
             )}
             <div className={styles.comments}>
-                        <div className={styles.comment}>
+                {data ? (
+                    data.map((item) => (
+                        <div className={styles.comment} key={item._id}>
                             <div className={styles.user}>
+                                {item?.user?.image && (
                                     <Image
-                                        src='/p1.jpeg'
+                                        src={item.user.image}
                                         alt=""
                                         width={50}
                                         height={50}
                                         className={styles.image}
                                     />
+                                )}
                                 <div className={styles.userInfo}>
-                                    <span className={styles.username}>sandip</span>
-                                    <span className={styles.date}>05.12.2024</span>
+                                    <span className={styles.username}>{item.user.name}</span>
+                                    <span className={styles.date}>{item.createdAt.substring(0, 10)}</span>
                                 </div>
                             </div>
-                            <p className={styles.desc}>test comment</p>
+                            <p className={styles.desc}>{item.desc}</p>
                         </div>
+                    ))
+                ) : (
+                    "loading"
+                )}
             </div>
         </div>
     );

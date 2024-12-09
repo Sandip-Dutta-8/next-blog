@@ -6,13 +6,6 @@ import { useEffect, useState } from "react";
 import "react-quill/dist/quill.bubble.css";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-// import {
-//     getStorage,
-//     ref,
-//     uploadBytesResumable,
-//     getDownloadURL,
-// } from "firebase/storage";
-// import { app } from "@/utils/firebase";
 import ReactQuill from "react-quill";
 
 const WritePage = () => {
@@ -26,73 +19,79 @@ const WritePage = () => {
     const [title, setTitle] = useState("");
     const [catSlug, setCatSlug] = useState("");
 
-    // useEffect(() => {
-    //     const storage = getStorage(app);
-    //     const upload = () => {
-    //         const name = new Date().getTime() + file.name;
-    //         const storageRef = ref(storage, name);
+    useEffect(() => {
+        const uploadToCloudinary = async () => {
+            if (!file) return;
+    
+            const formData = new FormData();
+            formData.append("file", file);
+            formData.append("upload_preset", "your_upload_preset"); // Replace with your actual preset
+    
+            const CLOUDINARY_URL = process.env.NEXT_PUBLIC_CLOUDINARY_URL;
+    
+            if (!CLOUDINARY_URL) {
+                console.error("CLOUDINARY_URL is not defined in the environment variables");
+                return;
+            }
+    
+            // Extract Cloudinary URL
+            const cloudName = CLOUDINARY_URL.split("@")[1];
+            const cloudinaryBaseURL = `https://api.cloudinary.com/v1_1/${cloudName}/upload`;
+    
+            try {
+                const response = await fetch(cloudinaryBaseURL, {
+                    method: "POST",
+                    body: formData,
+                });
+    
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Cloudinary upload failed: ${response.status} - ${errorText}`);
+                }
+    
+                const data = await response.json();
+                setMedia(data.secure_url);
+            } catch (error) {
+                console.error("Error uploading to Cloudinary:", error);
+            }
+        };
+    
+        uploadToCloudinary();
+    }, [file]);
+    
 
-    //         const uploadTask = uploadBytesResumable(storageRef, file);
+    if (status === "loading") {
+        return <div className={styles.loading}>Loading...</div>;
+    }
 
-    //         uploadTask.on(
-    //             "state_changed",
-    //             (snapshot) => {
-    //                 const progress =
-    //                     (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-    //                 console.log("Upload is " + progress + "% done");
-    //                 switch (snapshot.state) {
-    //                     case "paused":
-    //                         console.log("Upload is paused");
-    //                         break;
-    //                     case "running":
-    //                         console.log("Upload is running");
-    //                         break;
-    //                 }
-    //             },
-    //             (error) => { },
-    //             () => {
-    //                 getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-    //                     setMedia(downloadURL);
-    //                 });
-    //             }
-    //         );
-    //     };
+    if (status === "unauthenticated") {
+        router.push("/");
+    }
 
-    //     file && upload();
-    // }, [file]);
-
-    // if (status === "loading") {
-    //     return <div className={styles.loading}>Loading...</div>;
-    // }
-
-    // if (status === "unauthenticated") {
-    //     router.push("/");
-    // }
-
-    // const slugify = (str) =>
-    //     str
-    //         .toLowerCase()
-    //         .trim()
-    //         .replace(/[^\w\s-]/g, "")
-    //         .replace(/[\s_-]+/g, "-")
-    //         .replace(/^-+|-+$/g, "");
+    const slugify = (str) =>
+        str
+            .toLowerCase()
+            .trim()
+            .replace(/[^\w\s-]/g, "")
+            .replace(/[\s_-]+/g, "-")
+            .replace(/^-+|-+$/g, "");
 
     const handleSubmit = async () => {
-        // const res = await fetch("/api/posts", {
-        //     method: "POST",
-        //     body: JSON.stringify({
-        //         title,
-        //         desc: value,
-        //         img: media,
-        //         slug: slugify(title),
-        //         catSlug: catSlug || "style", //If not selected, choose the general category
-        //     }),
-        // });
+        const res = await fetch("/api/posts", {
+            method: "POST",
+            body: JSON.stringify({
+                title,
+                desc: value,
+                img: media,
+                slug: slugify(title),
+                catSlug: catSlug || "style", // If not selected, choose the general category
+            }),
+        });
 
-        // if (res.status === 200) {
-        //     const data = await res.json();
-        //     router.push(`/posts/${data.slug}`);
-        // }
+        if (res.status === 200) {
+            const data = await res.json();
+            router.push(`/posts/${data.slug}`);
+        }
     };
 
     const modules = {
@@ -100,7 +99,7 @@ const WritePage = () => {
             [{ header: [1, 2, false] }],
             ["bold", "italic", "underline", "strike", "blockquote"],
             [{ list: "ordered" }, { list: "bullet" }, { indent: "-1" }, { indent: "+1" }],
-            ["link", "image"],
+            ["link"],
             ["clean"],
         ],
     };
@@ -116,7 +115,6 @@ const WritePage = () => {
         "bullet",
         "indent",
         "link",
-        "image",
     ];
 
     return (
@@ -137,7 +135,7 @@ const WritePage = () => {
             </select>
             <div className={styles.editor}>
                 <button className={styles.button} onClick={() => setOpen(!open)}>
-                    <Image src="/add1.png" alt="+" width={16} height={16} />
+                    <Image src="/add.png" alt="+" width={16} height={16} />
                 </button>
                 {open && (
                     <div className={styles.add}>
