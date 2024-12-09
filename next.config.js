@@ -1,23 +1,18 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     images: {
-        domains: ["lh3.googleusercontent.com", "res.cloudinary.com"]
+        domains: ["lh3.googleusercontent.com", "firebasestorage.googleapis.com", "res.cloudinary.com"]
     },
-    webpack(config) {
-        config.module.rules.push({
-            test: /.+\.(js|jsx)$/,
-            use: {
-                loader: 'babel-loader',
-                options: {
-                    presets: ['next/babel'],
-                    plugins: ['transform-remove-console'] // Remove console logs in production
-                }
+    reactStrictMode: true,
+    pageExtensions: ['page.js', 'page.jsx'],
+    async rewrites() {
+        return [
+            {
+                source: '/write/:path*',
+                destination: '/write', // Redirect to the client-side page
             },
-            exclude: /node_modules/
-        });
-
-        return config;
+        ];
     },
 }
 
-module.exports = nextConfig;
+module.exports = nextConfig
