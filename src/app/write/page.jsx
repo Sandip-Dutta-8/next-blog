@@ -1,5 +1,5 @@
 // src/app/write/page.jsx
-"use client";  // This marks the component as a client component
+"use client";  // This directive indicates that the page should not be prerendered on the server side
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
