@@ -1,13 +1,10 @@
-"use client";
-
-import Image from "next/image";
-import styles from "./writePage.module.css";
 import { useEffect, useState } from "react";
-import "react-quill/dist/quill.bubble.css";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import ReactQuill from "react-quill";
-import dynamic from "next/dynamic"; // Import dynamic for client-side components
+import "react-quill/dist/quill.bubble.css";
+import Image from "next/image";
+import styles from "./writePage.module.css";
 
 const WritePage = () => {
     const { status } = useSession();
@@ -35,8 +32,12 @@ const WritePage = () => {
                 return;
             }
 
+            // Extract Cloudinary URL
+            const cloudName = CLOUDINARY_URL.split("@")[1];
+            const cloudinaryBaseURL = `https://api.cloudinary.com/v1_1/${cloudName}/upload`;
+
             try {
-                const response = await fetch(CLOUDINARY_URL, {
+                const response = await fetch(cloudinaryBaseURL, {
                     method: "POST",
                     body: formData,
                 });
