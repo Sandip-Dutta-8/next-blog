@@ -7,6 +7,7 @@ import "react-quill/dist/quill.bubble.css";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import ReactQuill from "react-quill";
+import dynamic from "next/dynamic"; // Import dynamic for client-side components
 
 const WritePage = () => {
     const { status } = useSession();
@@ -22,43 +23,38 @@ const WritePage = () => {
     useEffect(() => {
         const uploadToCloudinary = async () => {
             if (!file) return;
-    
+
             const formData = new FormData();
             formData.append("file", file);
             formData.append("upload_preset", "your_upload_preset"); // Replace with your actual preset
-    
+
             const CLOUDINARY_URL = process.env.NEXT_PUBLIC_CLOUDINARY_URL;
-    
+
             if (!CLOUDINARY_URL) {
                 console.error("CLOUDINARY_URL is not defined in the environment variables");
                 return;
             }
-    
-            // Extract Cloudinary URL
-            const cloudName = CLOUDINARY_URL.split("@")[1];
-            const cloudinaryBaseURL = `https://api.cloudinary.com/v1_1/${cloudName}/upload`;
-    
+
             try {
-                const response = await fetch(cloudinaryBaseURL, {
+                const response = await fetch(CLOUDINARY_URL, {
                     method: "POST",
                     body: formData,
                 });
-    
+
                 if (!response.ok) {
                     const errorText = await response.text();
                     throw new Error(`Cloudinary upload failed: ${response.status} - ${errorText}`);
                 }
-    
+
                 const data = await response.json();
                 setMedia(data.secure_url);
             } catch (error) {
                 console.error("Error uploading to Cloudinary:", error);
             }
         };
-    
+
         uploadToCloudinary();
     }, [file]);
-    
 
     if (status === "loading") {
         return <div className={styles.loading}>Loading...</div>;
